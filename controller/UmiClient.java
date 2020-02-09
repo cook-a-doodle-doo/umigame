@@ -58,8 +58,6 @@ public class UmiClient {
 		out.flush();
 	}
 
-	//ships  Map<String, int[]>
-	//energy Map<int   , int[]>
 	public void registerRxHandler(BiConsumer<Map<String, ArrayList<Integer>>, ArrayList<Integer>> func) {
 		if (readloop != null) {
 	//		readloop.stop();

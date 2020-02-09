@@ -4,12 +4,12 @@ import java.net.*;
 import java.io.*;
 import java.util.*;
 
-public class Prophet implements BiConsumer<Map<String, ArrayList<Integer>>, ArrayList<Integer>> {
+public class Assault implements BiConsumer<Map<String, ArrayList<Integer>>, ArrayList<Integer>> {
 	private String name;
 	public Map<String, ArrayList<Integer>> ships   = new HashMap<String, ArrayList<Integer>>();
 	public ArrayList<Integer>              energys = new ArrayList<Integer>();
 
-	public Prophet(String name) {
+	public Assault(String name) {
 		this.name = name;
 	}
 
@@ -21,13 +21,13 @@ public class Prophet implements BiConsumer<Map<String, ArrayList<Integer>>, Arra
 	public static void main(String[] args) {
 		String name;
 		if (args.length < 1) {
-			name = "prophet";
+			name = "assault";
 		} else {
 			name = args[0];
 		}
 		UmiClient client = new UmiClient("localhost", 10000, name);
-		Prophet prophet  = new Prophet(name);
-		client.registerRxHandler(prophet);
+		Assault assault  = new Assault(name);
+		client.registerRxHandler(assault);
 		ArrayList<Integer> me, energys;
 
 		for (;;) {
@@ -37,8 +37,8 @@ public class Prophet implements BiConsumer<Map<String, ArrayList<Integer>>, Arra
 			} catch (Exception e) {
 				return;
 			}
-			me      = (ArrayList<Integer>)prophet.ships.get(name);
-			energys = (ArrayList<Integer>)prophet.energys;
+			me      = (ArrayList<Integer>)assault.ships.get(name);
+			energys = (ArrayList<Integer>)assault.energys;
 			if (me == null || energys == null) continue;
 
 			int meX = ((Integer)me.get(0)).intValue();
