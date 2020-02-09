@@ -60,19 +60,19 @@ public class UmiClient {
 
 	//ships  Map<String, int[]>
 	//energy Map<int   , int[]>
-	public void registerRxHandler(BiConsumer<Map<String, Object>, java.util.List<Integer>> func) {
+	public void registerRxHandler(BiConsumer<Map<String, ArrayList<Integer>>, ArrayList<Integer>> func) {
 		if (readloop != null) {
 	//		readloop.stop();
 		}
 		readloop = new Thread(new Runnable() {
-			private BiConsumer<Map<String, Object>, java.util.List<Integer>> callbackHandler;
+			private BiConsumer<Map<String, ArrayList<Integer>>, ArrayList<Integer>> callbackHandler;
 			private boolean isLive = true;
 
 			public void die() {
 				this.isLive = false;
 			}
 
-			public  Runnable setCallbackHandler(BiConsumer<Map<String, Object>, java.util.List<Integer>> callback) {
+			public  Runnable setCallbackHandler(BiConsumer<Map<String, ArrayList<Integer>>, ArrayList<Integer>> callback) {
 				callbackHandler = callback;
 				return this;
 			}
@@ -80,32 +80,32 @@ public class UmiClient {
 			public void run() {
 				for (;isLive;) {
 					//船の座標をパース
-					Map<String, Object> ships = new HashMap<>();
+					Map<String, ArrayList<Integer>> ships = new HashMap<String, ArrayList<Integer>>();
 					String  line, player;
 					Scanner scanner;
 					for (line = readLine(); !"ship_info".equals(line); line = readLine());
 					for (line = readLine(); !".".equals(line)        ; line = readLine()) {
 						scanner = new Scanner(line);
-						int arr[] = new int[3];
+						//int arr[] = new int[3];
 						player = scanner.next();
-						arr[0] = scanner.nextInt(); //y
-						arr[1] = scanner.nextInt(); //x
-						arr[2] = scanner.nextInt(); //point
+						ArrayList<Integer> arr = new ArrayList<Integer>(Arrays.asList(
+									scanner.nextInt(),
+									scanner.nextInt(),
+									scanner.nextInt()));
 						ships.put(player, arr);
 						scanner.close();
 					}
 					//エネルギーのリストをパース
-					java.util.List<Integer> energys = new ArrayList<Integer>();
+					ArrayList<Integer> energys = new ArrayList<Integer>();
 					for (line = readLine(); !"energy_info".equals(line); line = readLine());
 					for (line = readLine(); !".".equals(line)          ; line = readLine()) {
 						scanner = new Scanner(line);
-						energys.add(scanner.nextInt());
-						energys.add(scanner.nextInt());
-						energys.add(scanner.nextInt());
+						energys.add(scanner.nextInt()); //x
+						energys.add(scanner.nextInt()); //y
+						energys.add(scanner.nextInt()); //point
 						scanner.close();
 					}
 					//ハンドラの呼び出し
-					System.out.println("accept!!!");
 					callbackHandler.accept(ships, energys);
 				}
 			}
@@ -115,11 +115,9 @@ public class UmiClient {
 
 	private String readLine() {
 		try {
-			String s = in.readLine();
-			System.out.println(s);
-			return s;
+			return in.readLine();
 		} catch (Exception e) {
-			return "error";
+			return "error in readLine()";
 		}
 	}
 }
