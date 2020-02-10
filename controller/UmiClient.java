@@ -12,7 +12,7 @@ public class UmiClient {
 	private String name;
 	private BufferedReader   in; 
 	private PrintWriter      out; 
-	private Thread           readloop;
+	private ReadLoop         readloop;
 
 	public UmiClient(String host, int port, String name) {
 		try {
@@ -24,7 +24,7 @@ public class UmiClient {
 			this.out.flush();
 		}catch(Exception e){
 			System.out.println("error in constractor umiclient");
-			return;
+			throw new IllegalStateException("can't find server");
 		}
 	}
 
@@ -58,65 +58,128 @@ public class UmiClient {
 		out.flush();
 	}
 
-	public void registerRxHandler(BiConsumer<Map<String, ArrayList<Integer>>, ArrayList<Integer>> func) {
-		if (readloop != null) {
-	//		readloop.stop();
-		}
-		readloop = new Thread(new Runnable() {
-			private BiConsumer<Map<String, ArrayList<Integer>>, ArrayList<Integer>> callbackHandler;
-			private boolean isLive = true;
-
-			public void die() {
-				this.isLive = false;
-			}
-
-			public  Runnable setCallbackHandler(BiConsumer<Map<String, ArrayList<Integer>>, ArrayList<Integer>> callback) {
-				callbackHandler = callback;
-				return this;
-			}
-
-			public void run() {
-				for (;isLive;) {
-					//船の座標をパース
-					Map<String, ArrayList<Integer>> ships = new HashMap<String, ArrayList<Integer>>();
-					String  line, player;
-					Scanner scanner;
-					for (line = readLine(); !"ship_info".equals(line); line = readLine());
-					for (line = readLine(); !".".equals(line)        ; line = readLine()) {
-						scanner = new Scanner(line);
-						//int arr[] = new int[3];
-						player = scanner.next();
-						ArrayList<Integer> arr = new ArrayList<Integer>(Arrays.asList(
-									scanner.nextInt(),
-									scanner.nextInt(),
-									scanner.nextInt()));
-						ships.put(player, arr);
-						scanner.close();
-					}
-					//エネルギーのリストをパース
-					ArrayList<Integer> energys = new ArrayList<Integer>();
-					for (line = readLine(); !"energy_info".equals(line); line = readLine());
-					for (line = readLine(); !".".equals(line)          ; line = readLine()) {
-						scanner = new Scanner(line);
-						energys.add(scanner.nextInt()); //x
-						energys.add(scanner.nextInt()); //y
-						energys.add(scanner.nextInt()); //point
-						scanner.close();
-					}
-					//ハンドラの呼び出し
-					callbackHandler.accept(ships, energys);
-				}
-			}
-		}.setCallbackHandler(func));
-		readloop.start();
+	public void die() {
+		if (readloop == null) return;
+		readloop.die();
 	}
 
-	private String readLine() {
-		try {
-			return in.readLine();
-		} catch (Exception e) {
-			return "error in readLine()";
+	private class ReadLoop extends Thread{
+		private BiConsumer<Map<String, ArrayList<Integer>>, ArrayList<Integer>> callbackHandler;
+		private boolean isLive = true;
+
+		public void die() {
+			this.isLive = false;
 		}
+
+		public Runnable setCallbackHandler(BiConsumer<Map<String, ArrayList<Integer>>, ArrayList<Integer>> callback) {
+			callbackHandler = callback;
+			return this;
+		}
+
+		@Override
+		public void run() {
+			for (;isLive;) {
+				//船の座標をパース
+				Map<String, ArrayList<Integer>> ships = new HashMap<String, ArrayList<Integer>>();
+				String  line, player;
+				Scanner scanner;
+				for (line = readLine(); !"ship_info".equals(line); line = readLine());
+				for (line = readLine(); !".".equals(line)        ; line = readLine()) {
+					scanner = new Scanner(line);
+					//int arr[] = new int[3];
+					player = scanner.next();
+					ArrayList<Integer> arr = new ArrayList<Integer>(Arrays.asList(
+								scanner.nextInt(),
+								scanner.nextInt(),
+								scanner.nextInt()));
+					ships.put(player, arr);
+					scanner.close();
+				}
+				//エネルギーのリストをパース
+				ArrayList<Integer> energys = new ArrayList<Integer>();
+				for (line = readLine(); !"energy_info".equals(line); line = readLine());
+				for (line = readLine(); !".".equals(line)          ; line = readLine()) {
+					scanner = new Scanner(line);
+					energys.add(scanner.nextInt()); //x
+					energys.add(scanner.nextInt()); //y
+					energys.add(scanner.nextInt()); //point
+					scanner.close();
+				}
+				//ハンドラの呼び出し
+				callbackHandler.accept(ships, energys);
+			}
+		}
+	}
+
+	public void registerRxHandler(BiConsumer<Map<String, ArrayList<Integer>>, ArrayList<Integer>> func) {
+		ReadLoop readloop = new ReadLoop();
+		readloop.setCallbackHandler(func);
+		readloop.start();
+		this.readloop = readloop;
+	}
+
+/*
+	public void registerRxHandler(BiConsumer<Map<String, ArrayList<Integer>>, ArrayList<Integer>> func) {
+	if (readloop != null) {
+//		readloop.stop();
+	}
+	readloop = new Thread(new Runnable() {
+	private BiConsumer<Map<String, ArrayList<Integer>>, ArrayList<Integer>> callbackHandler;
+	private boolean isLive = true;
+
+	public void die() {
+	this.isLive = false;
+	}
+
+	public  Runnable setCallbackHandler(BiConsumer<Map<String, ArrayList<Integer>>, ArrayList<Integer>> callback) {
+	callbackHandler = callback;
+	return this;
+	}
+
+	public void run() {
+	for (;isLive;) {
+//船の座標をパース
+Map<String, ArrayList<Integer>> ships = new HashMap<String, ArrayList<Integer>>();
+String  line, player;
+Scanner scanner;
+for (line = readLine(); !"ship_info".equals(line); line = readLine());
+for (line = readLine(); !".".equals(line)        ; line = readLine()) {
+scanner = new Scanner(line);
+//int arr[] = new int[3];
+player = scanner.next();
+ArrayList<Integer> arr = new ArrayList<Integer>(Arrays.asList(
+scanner.nextInt(),
+scanner.nextInt(),
+scanner.nextInt()));
+ships.put(player, arr);
+scanner.close();
+}
+//エネルギーのリストをパース
+ArrayList<Integer> energys = new ArrayList<Integer>();
+for (line = readLine(); !"energy_info".equals(line); line = readLine());
+for (line = readLine(); !".".equals(line)          ; line = readLine()) {
+scanner = new Scanner(line);
+energys.add(scanner.nextInt()); //x
+energys.add(scanner.nextInt()); //y
+energys.add(scanner.nextInt()); //point
+scanner.close();
+}
+//ハンドラの呼び出し
+callbackHandler.accept(ships, energys);
+	}
+	}
+	}.setCallbackHandler(func));
+	readloop.start();
+	}
+	*/
+
+private String readLine() {
+	try {
+		return in.readLine();
+	} catch (Exception e) {
+		return "error in readLine()";
 	}
 }
+}
+
 

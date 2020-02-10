@@ -86,7 +86,9 @@ public class UmiServer3 {
 		if (random == null){// 乱数の準備をします
 			//TODO
 			System.out.println("new Random is exected at login");
-			random = new Random(0);
+			System.out.println(System.currentTimeMillis());
+			random = new Random();
+			System.out.println(System.currentTimeMillis());
 		}
 		
 		// すでに参加人数満たしていたら拒否
@@ -104,8 +106,15 @@ public class UmiServer3 {
 		}
 		
 		// 船の初期位置を乱数で決定します
-		int ix = Math.abs(random.nextInt()) % 256;
-		int iy = Math.abs(random.nextInt()) % 256;
+		int v = random.nextInt();
+		System.out.println("ship x: " + v);
+		int ix = Math.abs(v) % 256;
+
+		v = random.nextInt();
+		System.out.println("ship y: " + v);
+		int iy = Math.abs(v) % 256;
+
+		System.out.println("/=======================================");
 
 		// クライアントの名前や船の位置を表に登録します
 		userTable.put(name, new Ship(ix, iy));
@@ -271,9 +280,19 @@ public class UmiServer3 {
 		}
 		// 乱数で位置を決めて海上に配置します
 		int[] e = new int[3];
-		e[0] = Math.abs(random.nextInt()) % 256;
-		e[1] = Math.abs(random.nextInt()) % 256;
-		int tmpval = Math.abs(random.nextInt()) % 8;
+
+		int v = random.nextInt();
+		System.out.println("energy x: " + v);
+		e[0] = Math.abs(v) % 256;
+
+		v = random.nextInt();
+		System.out.println("energy y: " + v);
+		e[1] = Math.abs(v) % 256;
+
+		v = random.nextInt();
+		System.out.println("point x: " + v);
+		System.out.println("/=======================================");
+		int tmpval = Math.abs(v) % 8;
 		// エネルギータンクの点数 1から4点。1点25%、2点25%、3点25%、4点25%
 		if      (tmpval < 2) e[2] = 1;
 		else if (tmpval < 4) e[2] = 2;
